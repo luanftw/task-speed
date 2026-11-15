@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="Luan Henrique de Melo Santos" />
+    <meta name="theme-color" content="#121314" />
+    <meta
+      name="description"
+      content="TaskSpeed é um gerenciador de tarefas desenvolvido para organizar atividades, acompanhar prioridades e aumentar a produtividade no dia a dia."
+    />
+    <title>Task Speed | Gerenciador de tarefas</title>
+    <link rel="icon" type="image/png" href="./img/taskspeed.png" />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <!-- Barra lateral de navegação -->
+    <aside class="menu">
+      <h1 class="logo">
+        <span class="logo-icone"></span
+        ><span class="logo-texto">Task Speed</span>
+      </h1>
+      <nav aria-label="Navegação principal">
+        <button
+          type="button"
+          class="nav ativo"
+          data-acao="pagina"
+          data-pagina="dashboard"
+          aria-current="page"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 4h7v7H4zM13 4h7v4h-7zM13 11h7v9h-7zM4 14h7v6H4z" /></svg
+          >Dashboard
+        </button>
+        <button
+          type="button"
+          class="nav"
+          data-acao="pagina"
+          data-pagina="tarefas"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" /></svg
+          >Minhas tarefas
+        </button>
+        <button
+          type="button"
+          class="nav"
+          data-acao="pagina"
+          data-pagina="calendario"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" /></svg
+          >Calendário
+        </button>
+        <button
+          type="button"
+          class="nav"
+          data-acao="pagina"
+          data-pagina="categorias"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 7h7l2 2h9v10H3z" /></svg
+          >Categorias
+        </button>
+      </nav>
+      <button
+        type="button"
+        class="nav tema"
+        id="botao-tema"
+        data-acao="tema"
+        aria-pressed="false"
+        aria-label="Ativar tema claro"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3a9 9 0 1 0 0 18zM12 3v18" /></svg
+        >Tema
+      </button>
+    </aside>
+
+    <main class="conteudo" id="conteudo-principal">
+      <header class="topo">
+        <h2 id="titulo-pagina">Dashboard</h2>
+        <div class="topo-acoes">
+          <div class="alternar" id="alternar" hidden>
+            <button
+              type="button"
+              data-acao="pagina"
+              data-pagina="tarefas"
+              aria-pressed="false"
+            >
+              Lista
+            </button>
+            <button
+              type="button"
+              data-acao="pagina"
+              data-pagina="calendario"
+              aria-pressed="false"
+            >
+              Calendário
+            </button>
+          </div>
+          <button type="button" class="botao botao-principal" data-acao="nova">
+            + Nova tarefa
+          </button>
+        </div>
+      </header>
+
+      <!-- PÁGINA 1: Dashboard -->
+      <section class="pagina" id="pagina-dashboard">
+        <div class="indicadores">
+          <div class="indicador" id="ind-atrasadas">
+            <span>Atrasadas</span><strong id="n-atrasadas">0</strong>
+          </div>
+          <div class="indicador">
+            <span>Pendentes</span><strong id="n-afazer">0</strong>
+          </div>
+          <div class="indicador">
+            <span>Em andamento</span><strong id="n-andamento">0</strong>
+          </div>
+          <div class="indicador">
+            <span>Concluídas</span><strong id="n-concluidas">0</strong>
+          </div>
+          <div class="indicador">
+            <span>Total</span><strong id="n-total">0</strong>
+          </div>
+        </div>
+        <!-- Atrasadas só aparecem quando existem (controlado por atualizarDashboard) -->
+        <div class="bloco" id="bloco-atrasadas" hidden>
+          <div class="bloco-topo">
+            <h3>Atrasadas</h3>
+            <button
+              class="botao botao-texto"
+              id="ver-atrasadas"
+              data-acao="ver-periodo"
+              data-periodo="atrasadas"
+              hidden
+            ></button>
+          </div>
+          <ul class="mini critica" id="lista-atrasadas"></ul>
+        </div>
+        <div class="bloco">
+          <div class="bloco-topo">
+            <h3>Próximas entregas</h3>
+            <button
+              class="botao botao-texto"
+              id="ver-proximas"
+              data-acao="ver-periodo"
+              data-periodo="proximas"
+              hidden
+            ></button>
+          </div>
+          <ul class="mini" id="lista-proximas"></ul>
+        </div>
+        <div class="bloco">
+          <div class="bloco-topo">
+            <h3>Progresso</h3>
+            <span class="percentual" id="percentual">0%</span>
+          </div>
+          <div id="grafico"></div>
+        </div>
+      </section>
+
+      <!-- PÁGINA 2: Minhas tarefas -->
+      <section class="pagina" id="pagina-tarefas" hidden>
+        <div class="filtros">
+          <input
+            type="search"
+            id="busca"
+            class="campo-filtro"
+            aria-label="Pesquisar tarefas por título"
+            placeholder="Pesquisar por título..."
+          />
+          <select
+            id="f-categoria"
+            class="campo-filtro"
+            aria-label="Filtrar por categoria"
+          ></select>
+          <select
+            id="f-prioridade"
+            class="campo-filtro"
+            aria-label="Filtrar por prioridade"
+          >
+            <option value="">Todas as prioridades</option>
+            <option value="alta">Alta</option>
+            <option value="media">Média</option>
+            <option value="baixa">Baixa</option>
+          </select>
+          <select
+            id="f-status"
+            class="campo-filtro"
+            aria-label="Filtrar por status"
+          >
+            <option value="">Todos os status</option>
+            <option value="afazer">A fazer</option>
+            <option value="andamento">Em andamento</option>
+            <option value="concluida">Concluída</option>
+          </select>
+          <select
+            id="f-periodo"
+            class="campo-filtro"
+            aria-label="Filtrar por período"
+          >
+            <option value="">Todos os períodos</option>
+            <option value="hoje">Hoje</option>
+            <option value="proximas">Próximas</option>
+            <option value="atrasadas">Atrasadas</option>
+          </select>
+          <select id="ordem" class="campo-filtro" aria-label="Ordenar tarefas">
+            <option value="entrega">Ordenar: data de entrega</option>
+            <option value="prioridade">Ordenar: prioridade</option>
+            <option value="criacao">Ordenar: data de criação</option>
+          </select>
+          <button
+            type="button"
+            class="botao botao-secundario"
+            data-acao="limpar"
+          >
+            Limpar filtros
+          </button>
+        </div>
+        <p class="contagem" id="contagem"></p>
+        <div class="cabecalho-lista">
+          <span>Prioridade</span><span>Tarefa</span><span>Status</span
+          ><span>Entrega</span><span></span>
+        </div>
+        <!-- Linhas geradas por mostrarLista() -->
+        <ul class="lista" id="lista"></ul>
+      </section>
+
+      <!-- PÁGINA 3: Calendário -->
+      <section class="pagina" id="pagina-calendario" hidden>
+        <div class="card">
+          <div class="cal-topo">
+            <button
+              type="button"
+              class="botao botao-secundario"
+              data-acao="mes"
+              data-passo="-1"
+            >
+              ‹
+            </button>
+            <h3 id="titulo-mes"></h3>
+            <button
+              type="button"
+              class="botao botao-secundario"
+              data-acao="mes"
+              data-passo="1"
+            >
+              ›
+            </button>
+            <button
+              type="button"
+              class="botao botao-secundario"
+              data-acao="mes"
+              data-passo="0"
+            >
+              Hoje
+            </button>
+          </div>
+          <div class="grade-cal semana">
+            <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span
+            ><span>Qui</span><span>Sex</span><span>Sáb</span>
+          </div>
+          <!-- Dias gerados por desenharCalendario(); cada célula guarda sua data em data-data -->
+          <div class="grade-cal" id="grade-calendario"></div>
+          <p class="dica">
+            Selecione o número de um dia para criar uma tarefa ou uma tarefa do
+            calendário para consultar os detalhes.
+          </p>
+        </div>
+      </section>
+
+      <!-- PÁGINA 4: Categorias -->
+      <section class="pagina" id="pagina-categorias" hidden>
+        <div class="lista-cat" id="grade-categorias"></div>
+      </section>
+    </main>
+
+    <!-- Modal: cadastrar e editar (mesmo formulário para os dois modos; ver abrirFormulario) -->
+    <div class="fundo-modal" id="modal-form" aria-hidden="true">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-modal"
+        tabindex="-1"
+      >
+        <h3 id="titulo-modal">Nova tarefa</h3>
+        <form id="form-tarefa" novalidate>
+          <label for="titulo">Título</label>
+          <input
+            type="text"
+            id="titulo"
+            maxlength="60"
+            minlength="3"
+            required
+            placeholder="Ex.: Entregar trabalho de Algoritmos"
+          />
+          <label for="descricao">Descrição</label>
+          <textarea
+            id="descricao"
+            rows="3"
+            maxlength="300"
+            placeholder="Opcional"
+          ></textarea>
+          <div class="duas-colunas">
+            <div>
+              <label for="inicio">Data de início</label
+              ><input type="date" id="inicio" />
+            </div>
+            <div>
+              <label for="entrega">Data de entrega</label
+              ><input type="date" id="entrega" />
+            </div>
+            <div>
+              <label for="hora">Horário de entrega</label
+              ><input type="time" id="hora" />
+            </div>
+            <div>
+              <label for="categoria">Categoria</label
+              ><select id="categoria"></select>
+            </div>
+            <div>
+              <label for="prioridade">Prioridade</label>
+              <select id="prioridade">
+                <option value="baixa">Baixa</option>
+                <option value="media" selected>Média</option>
+                <option value="alta">Alta</option>
+              </select>
+            </div>
+            <div>
+              <label for="status">Status</label>
+              <select id="status">
+                <option value="afazer">A fazer</option>
+                <option value="andamento">Em andamento</option>
+                <option value="concluida">Concluída</option>
+              </select>
+            </div>
+          </div>
+          <p class="erro" id="erro" role="alert" aria-live="assertive"></p>
+          <div class="acoes-modal">
+            <button
+              type="button"
+              class="botao botao-secundario"
+              data-acao="fechar"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="botao botao-principal">
+              Salvar tarefa
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: confirmação de exclusão (substitui o confirm() nativo) -->
+    <div class="fundo-modal" id="modal-excluir" aria-hidden="true">
+      <div
+        class="modal pequeno"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-excluir"
+        aria-describedby="texto-excluir"
+        tabindex="-1"
+      >
+        <h3 id="titulo-excluir">Excluir tarefa?</h3>
+        <p class="tarefa-descricao" id="texto-excluir"></p>
+        <div class="acoes-modal">
+          <button
+            type="button"
+            class="botao botao-secundario"
+            data-acao="fechar"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="botao botao-perigo"
+            data-acao="confirmar-excluir"
+          >
+            Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: detalhes -->
+    <div class="fundo-modal" id="modal-detalhes" aria-hidden="true">
+      <div
+        class="modal"
+        id="conteudo-detalhes"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-detalhes"
+        tabindex="-1"
+      ></div>
+    </div>
+
+    <!-- Mensagens de sucesso e erro -->
+    <div
+      class="avisos"
+      id="avisos"
+      role="status"
+      aria-live="polite"
+      aria-atomic="false"
+    ></div>
+
+    <script src="./js/dados.js" defer></script>
+  </body>
+</html>
