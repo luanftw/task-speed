@@ -38,8 +38,6 @@ TaskSpeed/
 ├── img/
 │   └── taskspeed.png
 ├── README.md
-├── GITHUB-COMMITS.md
-└── .gitignore
 ```
 
 ## Armazenamento
